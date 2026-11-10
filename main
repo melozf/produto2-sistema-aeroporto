@@ -1,0 +1,261 @@
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        //Alunos:
+        //Cassio do Carmo, Larissa Lourenço, Marcos Vinícius de Freitas Melo.
+
+        Scanner input = new Scanner(System.in);
+        // vetores
+        String[] numeroVoo = new String[11];
+        String[] origem = new String[11];
+        String[] destino = new String[11];
+        String[] partida = new String[11];
+        String[] chegada = new String[11];
+        int[] capacidade = new int[11];
+        int[] confirmados = new int[11];
+        int totalVoos = 0;
+
+        String[] nomes = new String[50];
+        int[] idades = new int[50];
+        String[] cpfs = new String[50];
+        String[] emails = new String[50];
+        int[] vooReserva = new int[50];
+        int[] status = new int[50];
+        int totalReservas = 0;
+
+        int[] fila = new int[50];
+        int inicioFila = 1;
+        int fimFila = 0;
+
+        int[] pilha = new int[50];
+        int topo = 0;
+
+        // cadastro dos voos
+        totalVoos++;
+        numeroVoo[totalVoos] = "2904";
+        origem[totalVoos] = "Vitoria";
+        destino[totalVoos] = "Sao Paulo";
+        partida[totalVoos] = "08:00";
+        chegada[totalVoos] = "09:30";
+        capacidade[totalVoos] = 3;
+
+        totalVoos++;
+        numeroVoo[totalVoos] = "1520";
+        origem[totalVoos] = "Rio de Janeiro";
+        destino[totalVoos] = "Salvador";
+        partida[totalVoos] = "10:00";
+        chegada[totalVoos] = "12:00";
+        capacidade[totalVoos] = 2;
+
+        totalVoos++;
+        numeroVoo[totalVoos] = "3841";
+        origem[totalVoos] = "Sao Paulo";
+        destino[totalVoos] = "Brasilia";
+        partida[totalVoos] = "14:00";
+        chegada[totalVoos] = "15:40";
+        capacidade[totalVoos] = 4;
+
+        int opcaoPrincipal;
+
+        //Menu geral
+        do {
+            System.out.println("\n===== PAINEL DE CONTROLE AEROPORTO =====");
+            System.out.println("1 - Menu Passageiro");
+            System.out.println("9 - Menu Administrador");
+            System.out.println("0 - Sair");
+            System.out.print("Selecione... : ");
+            
+            opcaoPrincipal = Integer.parseInt(input.nextLine());
+
+            if (opcaoPrincipal == 1) {
+                int opcaoPassageiro;
+                do {
+                    System.out.println("\n===== PASSAGEIRO =====");
+                    System.out.println("1 - Realizar reserva");
+                    System.out.println("2 - Realizar check-in");
+                    System.out.println("3 - Voos disponíveis");
+                    System.out.println("4 - Voos com reservas pendentes");
+                    System.out.println("5 - Voos cheios");
+                    System.out.println("0 - Voltar");
+                    System.out.print("Escolha: ");
+                    
+                    opcaoPassageiro = Integer.parseInt(input.nextLine());
+
+                    if (opcaoPassageiro == 1) {
+
+                        System.out.println("\n--- VOOS DISPONIVEIS ---");
+                        for (int i = 1; i <= totalVoos; i++) {
+                            if (confirmados[i] < capacidade[i]) {
+                                System.out.println("Voo: " + numeroVoo[i] + " | " + origem[i] + " -> " + destino[i] + " | Vagas: " + (capacidade[i] - confirmados[i]));
+                            }
+                        }
+                
+                        System.out.print("\nNúmero do voo: ");
+                        String numero = input.nextLine();
+
+                        if (!numero.matches("[0-9]{4}")) {
+                            System.out.println("Número do voo deve ter 4 algarismos!");
+                        } else {
+                            int indiceVoo = -1;
+                            for (int i = 1; i <= totalVoos; i++) {
+                                if (numeroVoo[i].equals(numero)) {
+                                    indiceVoo = i;
+                                    break;
+                                }
+                            }
+                            if (indiceVoo == -1) {
+                                System.out.println("Voo não encontrado!");
+                            } else if (confirmados[indiceVoo] >= capacidade[indiceVoo]) {
+                                System.out.println("Voo lotado!");
+                            } else if (totalReservas >= 50) {
+                                System.out.println("Limite de reservas atingido!");
+                            } else {
+                                System.out.print("Nome: ");
+                                String nome = input.nextLine();
+                                System.out.print("Idade: ");
+                                int idade = Integer.parseInt(input.nextLine());
+                                System.out.print("CPF: ");
+                                String cpf = input.nextLine();
+                                System.out.print("E-mail: ");
+                                String email = input.nextLine();
+
+                                if (nome.isEmpty() || idade <= 0 || cpf.isEmpty() || !email.contains("@")) {
+                                    System.out.println("Dados inválidos!");
+                                } else {
+                                    totalReservas++;
+                                    nomes[totalReservas] = nome;
+                                    idades[totalReservas] = idade;
+                                    cpfs[totalReservas] = cpf;
+                                    emails[totalReservas] = email;
+                                    vooReserva[totalReservas] = indiceVoo;
+                                    
+                                    fila[++fimFila] = totalReservas;
+                                    System.out.println("Reserva solicitada! Aguardando aprovação.");
+                                }
+                            }
+                        }
+                    } else if (opcaoPassageiro == 2) {
+
+                        System.out.print("CPF: ");
+                        String cpf = input.nextLine();
+                        System.out.print("Número do voo: ");
+                        String numero = input.nextLine();
+                        
+                        boolean achou = false;
+                        for (int i = 1; i <= totalReservas; i++) {
+                            int voo = vooReserva[i];
+                            if (cpfs[i].equals(cpf) && numeroVoo[voo].equals(numero) && status[i] == 1) {
+                                achou = true;
+                                if (status[i] == 3) {
+                                    System.out.println("Check-in já realizado!");
+                                } else {
+                                    pilha[++topo] = i;
+                                    status[i] = 3;
+                                    System.out.println("Check-in realizado com sucesso!");
+                                }
+                                break;
+                            }
+                        }
+                        if (!achou) {
+                            System.out.println("Reserva confirmada não encontrada!!");
+                        }
+                    } else if (opcaoPassageiro == 3) {
+                        
+                        System.out.println("\n--- VOOS DISPONÍVEIS ---");
+                        for (int i = 1; i <= totalVoos; i++) {
+                            if (confirmados[i] < capacidade[i]) {
+                                System.out.println("Voo: " + numeroVoo[i] + " | " + origem[i] + " -> " + destino[i] + " | Vagas: " + (capacidade[i] - confirmados[i]));
+                            }
+                        }
+                    } else if (opcaoPassageiro == 4) {
+                        
+                        System.out.println("\n--- RESERVAS PENDENTES ---");
+                        boolean encontrou = false;
+                        for (int i = inicioFila; i <= fimFila; i++) {
+                            int reserva = fila[i];
+                            System.out.println("Passageiro: " + nomes[reserva] + " | Voo: " + numeroVoo[vooReserva[reserva]]);
+                            encontrou = true;
+                        }
+                        if (!encontrou) System.out.println("Nenhuma reserva pendente.");
+                    } else if (opcaoPassageiro == 5) {
+                        
+                        System.out.println("\n--- VOOS CHEIOS ---");
+                        boolean encontrou = false;
+                        for (int i = 1; i <= totalVoos; i++) {
+                            if (confirmados[i] == capacidade[i]) {
+                                System.out.println("Voo: " + numeroVoo[i] + " | " + origem[i] + " -> " + destino[i]);
+                                encontrou = true;
+                            }
+                        }
+                        if (!encontrou) System.out.println("Nenhum voo está cheio.");
+                    }
+                } while (opcaoPassageiro != 0);
+
+            } else if (opcaoPrincipal == 9) {
+                int opcaoAdmin;
+                do {
+                    System.out.println("\n===== ADMINISTRADOR =====");
+                    System.out.println("1 - Processar reservas");
+                    System.out.println("2 - Consultar reservas pendentes");
+                    System.out.println("3 - Consultar check-ins");
+                    System.out.println("0 - Voltar");
+                    System.out.print("Escolha: ");
+                    
+                    opcaoAdmin = Integer.parseInt(input.nextLine());
+                // Processar as reserva
+                    if (opcaoAdmin == 1) {
+                        
+                        if (inicioFila > fimFila) {
+                            System.out.println("Não existem reservas pendentes!");
+                        } else {
+                            while (inicioFila <= fimFila) {
+                                int reserva = fila[inicioFila++];
+                                int voo = vooReserva[reserva];
+
+                                if (confirmados[voo] < capacidade[voo]) {
+                                    confirmados[voo]++;
+                                    status[reserva] = 1;
+                                    System.out.println("Reserva confirmada: " + nomes[reserva]);
+                                } else {
+                                    status[reserva] = 2;
+                                    System.out.println("Reserva recusada: " + nomes[reserva] + " - Voo lotado.");
+                                }
+                            }
+                        }
+                    } else if (opcaoAdmin == 2) {
+                        // Consultar reservas pendentes
+                        System.out.println("\n---- RESERVAS PENDENTES ---");
+                        boolean encontrou = false;
+                        for (int i = inicioFila; i <= fimFila; i++) {
+                            int reserva = fila[i];
+                            System.out.println("Passageiro: " + nomes[reserva] + " | Voo: " + numeroVoo[vooReserva[reserva]]);
+                            encontrou = true;
+                        }
+                        if (!encontrou) System.out.println("Nenhuma reserva pendente.");
+                    } else if (opcaoAdmin == 3) {
+                        // Exibir Check-ins
+                        System.out.println("\n--- PASSAGEIROS COM CHECK-IN ----");
+                        if (topo == 0) {
+                            System.out.println("Nenhum check-in realizado.");
+                        } else {
+                            for (int i = topo; i >= 1; i--) {
+                                int reserva = pilha[i];
+                                System.out.println("Passageiro: " + nomes[reserva] + " | CPF: " + cpfs[reserva] + " | Voo: " + numeroVoo[vooReserva[reserva]]);
+                            }
+                        }
+                    }
+                } while (opcaoAdmin != 0);
+
+            } else if (opcaoPrincipal != 0) {
+                System.out.println("Opção inválida!");
+            }
+
+        } while (opcaoPrincipal != 0);
+        
+        System.out.println("Sistema encerrado.");
+        input.close();
+    }
+}
